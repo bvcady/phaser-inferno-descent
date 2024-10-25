@@ -57,30 +57,6 @@ export class RoomScene extends Scene {
 
   reset() {
     this.cells = generateRoom(this);
-    const wallTileMap = this.make.tilemap({
-      width: 4,
-      height: 4,
-      tileHeight: 400,
-      tileWidth: 400,
-    });
-    const tiles = wallTileMap.addTilesetImage(
-      "walls_tilemap",
-      "walls",
-      400,
-      400
-    );
-    this.wallTileMap?.createBlankLayer("baseLayer", tiles!, 0, 0);
-
-    const sprites = wallTileMap.createFromTiles(
-      [0, 15],
-      [0, 15],
-      {},
-      this,
-      this.camera,
-      "baseLayer"
-    );
-
-    console.log({ sprites });
 
     this.wallTiles = new Map();
 
@@ -124,19 +100,18 @@ export class RoomScene extends Scene {
       }
     });
 
-    this.cells
-      .filter((c) => c.isWall)
-      .forEach((c) => {
-        const displayTile = this.wallTiles.get([c.x, c.y].toString());
-        console.log({ displayTile, wtm: this.wallTileMap });
-
-        if (displayTile) {
-          const spriteTexture =
-            sprites?.[displayTile.x + displayTile.y * displayTile.x].texture;
-          if (spriteTexture)
-            this.add.sprite(c.x * 400, c.y * 400, spriteTexture);
-        }
-      });
+    const wallsIterator = this.wallTiles.entries();
+    for (let [key, value] of wallsIterator) {
+      console.log(key, value);
+      this.add
+        .sprite(
+          Number(key.split(",")[0]) * 400 - 200,
+          Number(key.split(",")[1]) * 400 - 200,
+          "walls_tilemap",
+          value.x + value.x * value.y
+        )
+        .setDepth(Number(key.split(",")[1]) * 400);
+    }
   }
 
   create() {

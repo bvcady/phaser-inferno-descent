@@ -1,8 +1,8 @@
 import { Math, Tilemaps } from "phaser";
 import { Cell } from "../../types/Cell";
 
-const A = 1;
-const B = 0;
+const A = 0;
+const B = 1;
 
 const V = Math.Vector2;
 
@@ -34,67 +34,42 @@ interface Props {
   tileMap?: Tilemaps.Tilemap;
 }
 
-export const setDisplayTile = ({
-  pos,
-  cells,
-  displayTiles,
-  criteria = "isWall",
-}: Props) => {
-  const placeholders = [0, 0, 0, 0];
+export const setDisplayTile = ({ pos, cells, displayTiles }: Props) => {
+  const getWorldTile = (coords: Math.Vector2): number => {
+    const foundCell = cells.find((c) => c.x === coords.x && c.y === coords.y);
+    if (foundCell) {
+      if (foundCell.isFloor) return 0;
+    }
+    return 1;
+  };
+
+  const calculateDisplayTile = (coords: Math.Vector2) => {
+    const topLeft: number = getWorldTile(
+      coords.clone().subtract(neighbours[3])
+    );
+    const topRight: number = getWorldTile(
+      coords.clone().subtract(neighbours[2])
+    );
+    const botLeft: number = getWorldTile(
+      coords.clone().subtract(neighbours[1])
+    );
+    const botRight: number = getWorldTile(
+      coords.clone().subtract(neighbours[0])
+    );
+
+    const displayTileOptionVector = displayTileOptions.get(
+      [topLeft, topRight, botLeft, botRight].toString()
+    );
+    return displayTileOptionVector;
+  };
 
   for (let i = 0; i < neighbours.length; i++) {
     const newPos: Math.Vector2 = pos.clone().add(neighbours[i]);
 
-    // check if the the neighbouring cells are a wall or do not exist
-    const neighbouringCell =
-      cells.find((c) => c.x === newPos.x && c.y === newPos.y)?.[criteria] ??
-      true
-        ? 1
-        : 0;
-
-    placeholders[i] = neighbouringCell;
+    displayTiles?.set(
+      [newPos.x, newPos.y].toString(),
+      calculateDisplayTile(newPos)
+    );
   }
-
-  return displayTiles?.set(
-    [pos.x, pos.y].toString(),
-    displayTileOptions.get(placeholders.toString())
-  );
 };
-
-// const getCellFromTileMap = (
-//   tm: Tilemaps.Tilemap,
-//   coord: Math.Vector2,
-//   layer = 0
-// ) => {
-//   return tm.getTileAt(coord.x, coord.y, false, layer);
-// };
-
-// const getWorldTile = (coords: Math.Vector2) => {
-//   // get a cell from a tilemap
-//   const atlasCoord = getCellFromTileMap(
-//     dualGridTileMap as Tilemaps.Tilemap,
-//     coords
-//   );
-// };
-
-// export const calculateDisplayTile = (coords: Math.Vector2) => {
-
-//   const topRight = get
-//   // get 4 world tile neighbours
-//   // TileType botRight = getWorldTile(coords - NEIGHBOURS[0]);
-//   // TileType botLeft = getWorldTile(coords - NEIGHBOURS[1]);
-//   // TileType topRight = getWorldTile(coords - NEIGHBOURS[2]);
-//   // TileType topLeft = getWorldTile(coords - NEIGHBOURS[3]);
-//   // // return tile (atlas coord) that fits the neighbour rules
-//   // return neighboursToAtlasCoord[new(topLeft, topRight, botLeft, botRight)];
-// };
-
-// // TileType getWorldTile(Vector2I coords) {
-// //         Vector2I atlasCoord = GetCellAtlasCoords(0, coords);
-// //         if (atlasCoord == grassPlaceholderAtlasCoord)
-// //             return Grass;
-// //         else
-// //             return Dirt;
-// //     }
-// }
 
