@@ -1,16 +1,14 @@
 import { Game } from "phaser";
 import { Boot } from "./scenes/Boot";
-import { Game as MainGame } from "./scenes/Game";
+import { RoomScene } from "./scenes/RoomScene";
 
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Phaser.Types.Core.GameConfig = {
-  physics: {
-    default: "arcade",
-    arcade: {
-      gravity: { y: 0, x: 0 },
-      // debug: true,
-    },
+  fps: {
+    limit: 60,
+    target: 60, 
+    forceSetTimeOut: true
   },
   scale: {
     mode: Phaser.Scale.FIT,
@@ -18,17 +16,10 @@ const config: Phaser.Types.Core.GameConfig = {
     width: 1600,
     height: 900,
   },
-  fps: {
-    target: 60,
-    forceSetTimeOut: true,
-  },
   type: Phaser.WEBGL,
-  pixelArt: false,
-  width: "100%",
-  height: "100%",
+  width: 1200,
   parent: "game-container",
-  backgroundColor: "#028af8",
-  scene: [Boot, MainGame],
+  scene: [Boot, RoomScene],
 };
 
 const StartGame = (parent: string) => {
