@@ -22,6 +22,10 @@ export class Boot extends Scene {
       frameWidth: 400,
       frameHeight: 400,
     });
+    this.load.spritesheet("walls_tilemap_2", "assets/walls_tileset_2@2x.png", {
+      frameWidth: 400,
+      frameHeight: 400,
+    });
   }
 
   create() {

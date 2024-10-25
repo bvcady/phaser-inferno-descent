@@ -4,7 +4,7 @@ import { Cell } from "../../types/Cell";
 import { EventBus } from "../EventBus";
 import { Player } from "../player/Player";
 import { generateRoom } from "./roomGeneration";
-import { setDisplayTile } from "../../utils/tilemap-handler/tilemapHandler";
+import { getDisplaySprite } from "../../utils/tilemap-handler/getDisplaySprite";
 
 export class RoomScene extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
@@ -25,6 +25,7 @@ export class RoomScene extends Scene {
   wallTiles: Map<string, PMath.Vector2>;
 
   wallTileMap: Tilemaps.Tilemap;
+  wallSprites: { x: number; y: number; vector?: PMath.Vector2 }[];
 
   private player: Player;
 
@@ -58,6 +59,44 @@ export class RoomScene extends Scene {
   reset() {
     this.cells = generateRoom(this);
 
+    this.wallSprites = new Array(this.data.get("height") + 1)
+      .fill("")
+      .map((_, y) =>
+        new Array(this.data.get("width") + 1).fill("").map((_, x) => {
+          return {
+            x,
+            y,
+            vector: getDisplaySprite({
+              pos: new PMath.Vector2(x, y),
+              cells: this.cells,
+              shouldlog: this.poi.x === x && this.poi.y === y,
+            }),
+          };
+        })
+      )
+      .flat();
+
+    this.wallSprites.forEach((s) => {
+      if (s.vector) {
+        const frame = s.vector.y *4 + s.vector.x;
+        if (s.x === this.poi.x && s.y === this.poi.y) {
+          console.log(frame, s.vector);
+        }
+        this.add.sprite(
+          s.x * 400 - 200,
+          s.y * 400 - 200,
+          PMath.Between(0,1) > 0.5 ? "walls_tilemap" : 'walls_tilemap_2',
+          frame
+        ).setDepth(s.y * 400 - 200);
+        this.add.sprite(
+          s.x * 400 - 200,
+          s.y * 400 - 200 - 200,
+          PMath.Between(0,1) > 0.5 ? "walls_tilemap" : 'walls_tilemap_2',
+          frame
+        ).setDepth(s.y * 400 - 200);;
+      }
+    });
+
     this.wallTiles = new Map();
 
     this.cells.forEach((c) => {
@@ -77,13 +116,6 @@ export class RoomScene extends Scene {
         return;
       }
       if (c.isWall) {
-        setDisplayTile({
-          pos: new PMath.Vector2(c.x, c.y),
-          cells: this.cells,
-          displayTiles: this.wallTiles,
-          criteria: "isWall",
-        });
-        // this.add.sprite(c.x * 400, c.y * 400 - 100, "wall").setDepth(c.y * 400);
       } else {
         this.add
           .rectangle(c.x * 400, c.y * 400, 340, 340, getColor())
@@ -100,18 +132,26 @@ export class RoomScene extends Scene {
       }
     });
 
-    const wallsIterator = this.wallTiles.entries();
-    for (let [key, value] of wallsIterator) {
-      console.log(key, value);
-      this.add
-        .sprite(
-          Number(key.split(",")[0]) * 400 - 200,
-          Number(key.split(",")[1]) * 400 - 200,
-          "walls_tilemap",
-          value.x + value.x * value.y
-        )
-        .setDepth(Number(key.split(",")[1]) * 400);
-    }
+    // const wallsIterator = this.wallTiles.entries();
+    // for (let [key, value] of wallsIterator) {
+    //   console.log(key, value);
+    //   this.add.rectangle(
+    //     Number(key.split(",")[0]) * 400 - 200,
+    //     Number(key.split(",")[1]) * 400 - 200,
+    //     400,
+    //     400,
+    //     0x00ff00,
+    //     0.2
+    //   );
+    //   this.add
+    //     .sprite(
+    //       Number(key.split(",")[0]) * 400 - 200,
+    //       Number(key.split(",")[1]) * 400 - 200,
+    //       "walls_tilemap",
+    //       value.x + value.x * value.y
+    //     )
+    //     .setDepth(Number(key.split(",")[1]) * 400);
+    // }
   }
 
   create() {
@@ -200,6 +240,14 @@ export class RoomScene extends Scene {
         const n = p1Vec.subtract(p2Vec).normalize();
 
         if (!this.player.isMoving && n.length() !== 0) {
+          getDisplaySprite({
+            pos: new PMath.Vector2(
+              this.targetPosition.x,
+              this.targetPosition.y
+            ),
+            cells: this.cells,
+            shouldlog: true,
+          });
           this.tweens.add({
             targets: this.player,
             x: this.targetPosition.x * 400,
@@ -234,4 +282,3 @@ export class RoomScene extends Scene {
     this.player.update();
   }
 }
-

@@ -1,14 +1,15 @@
+import * as Phaser from "phaser";
 import { Game } from "phaser";
 import { Boot } from "./scenes/Boot";
 import { RoomScene } from "./scenes/RoomScene";
 
-//  Find out more information about the Game Config at:
+//  Find out more information about the Game Config at:`
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Phaser.Types.Core.GameConfig = {
   fps: {
     limit: 60,
-    target: 60, 
-    forceSetTimeOut: true
+    target: 60,
+    forceSetTimeOut: true,
   },
   scale: {
     mode: Phaser.Scale.FIT,
@@ -27,4 +28,3 @@ const StartGame = (parent: string) => {
 };
 
 export default StartGame;
-
